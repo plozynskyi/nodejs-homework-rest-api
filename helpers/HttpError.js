@@ -1,30 +1,8 @@
-// new class Error {
-//   constructor(message) {
-//     this.message = message;
-//     this.name = "Error";
+class HttpError extends Error {
+  constructor(statusCode, message) {
+    super(message);
+    this.statusCode = statusCode;
+  }
+}
 
-//   }
-// }
-
-// {
-//   /* const errorMessages = {
-//   400: 'Bad Request',
-//   401: 'Unauthorized',
-//   403: 'Forbidden',
-//   404: 'Not Found',
-//   409: 'Conflict',
-// }; */
-// }
-
-// {
-//   /*
-// const HttpError = (status, message = errorMessages[status]) => {
-//   const error = new Error(message);
-//   error.status = status;
-//   return error;
-// }; */
-// }
-
-// {
-//   /* module.exports = HttpError; */
-// }
+module.exports = { HttpError };
