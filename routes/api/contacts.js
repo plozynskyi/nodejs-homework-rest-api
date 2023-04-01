@@ -1,19 +1,9 @@
 const express = require('express');
-const Joi = require('joi');
+
 const { NotFound } = require('http-errors');
 
 const { HttpError } = require('../../helpers');
-
-const contactSchema = Joi.object({
-  name: Joi.string().min(3).max(30).required(),
-  email: Joi.string()
-    .email({
-      minDomainSegments: 2,
-      tlds: { allow: ['com', 'net', 'ua'] },
-    })
-    .required(),
-  phone: Joi.string().required(),
-});
+const { contactValidationSchema } = require('../../utils/validation');
 
 const router = express.Router();
 
@@ -61,7 +51,7 @@ router.get('/:id', async (req, res, next) => {
 
 router.post('/', async (req, res, next) => {
   try {
-    const { error } = contactSchema.validate(req.body);
+    const { error } = contactValidationSchema.validate(req.body);
     if (error) {
       throw HttpError(400, error.message);
     }
@@ -80,7 +70,7 @@ router.post('/', async (req, res, next) => {
 
 router.put('/:id', async (req, res, next) => {
   try {
-    const { error } = contactSchema.validate(req.body);
+    const { error } = contactValidationSchema.validate(req.body);
     if (error) {
       error.status = 400;
       throw error;
