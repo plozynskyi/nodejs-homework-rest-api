@@ -1,24 +1,27 @@
 const express = require('express');
 
-const { HttpError } = require('../../helpers/HttpError');
-const { contactValidationSchema } = require('../../utils/validation');
-
-const router = express.Router();
-
 const {
   listContacts,
   getContactById,
   addContact,
   updateContact,
   removeContact,
-} = require('../../models/contacts');
+} = require('../../models/contactsServices');
+
+const { HttpError } = require('../../helpers/HttpError');
+const { contactValidationSchema } = require('../../utils/validation');
+const modelsMiddleware = require('../../middleware/models');
+
+const router = express.Router();
+router.use(modelsMiddleware);
 
 router.get('/', async (req, res, next) => {
   try {
-    const contacts = await listContacts();
+    const contacts = await listContacts(req);
     res.status(200).json({
       status: 'success',
       code: 200,
+      data_length: contacts.length,
       data: {
         result: contacts,
       },
@@ -31,7 +34,7 @@ router.get('/', async (req, res, next) => {
 router.get('/:id', async (req, res, next) => {
   try {
     const { id } = req.params;
-    const contact = await getContactById(id);
+    const contact = await getContactById(id, req);
     if (!contact) {
       throw new HttpError(404, `Contact with id - ${id} not found`);
     }
@@ -53,12 +56,12 @@ router.post('/', async (req, res, next) => {
     if (error) {
       throw new HttpError(400, error.message);
     }
-    const result = await addContact(req.body);
+    const result = await addContact(req);
     res.status(201).json({
       status: 'success',
       code: 201,
       data: {
-        result,
+        result: result,
       },
     });
   } catch (error) {
@@ -73,7 +76,7 @@ router.put('/:id', async (req, res, next) => {
       throw new HttpError(400, `Error validated`);
     }
     const { id } = req.params;
-    const result = await updateContact(id, req.body);
+    const result = await updateContact(id, req);
 
     if (!result) {
       throw new HttpError(404, `Contact with ${id} not found`);
@@ -93,7 +96,7 @@ router.put('/:id', async (req, res, next) => {
 router.delete('/:id', async (req, res, next) => {
   try {
     const { id } = req.params;
-    const result = await removeContact(id);
+    const result = await removeContact(id, req);
     if (!result) {
       throw new HttpError(404, `Not found`);
     }
