@@ -13,6 +13,10 @@ const {
 
 const { asyncWrapper } = require('../../helpers/apiHelper');
 
+const { authMiddleware } = require('../../middleware/authMiddleware');
+
+router.use(authMiddleware);
+
 router.route('/').get(asyncWrapper(getContacts)).post(asyncWrapper(addContact));
 
 router

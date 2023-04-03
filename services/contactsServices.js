@@ -1,7 +1,7 @@
-const { Contact } = require('../db/contactsModal');
+const { Contact } = require('../db/contactsModel');
 
-const getContactsService = async () => {
-  const contacts = await Contact.find({});
+const getContactsService = async contactId => {
+  const contacts = await Contact.find({ contactId });
   return contacts;
 };
 
@@ -10,8 +10,11 @@ const getContactByIdService = async id => {
   return result || null;
 };
 
-const addContactService = async ({ name, email, phone, favorite }) => {
-  const contact = new Contact({ name, email, phone, favorite });
+const addContactService = async (
+  { name, email, phone, favorite },
+  contactId
+) => {
+  const contact = new Contact({ name, email, phone, favorite, contactId });
   await contact.save();
   return contact;
 };

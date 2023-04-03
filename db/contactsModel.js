@@ -7,13 +7,20 @@ const contactSchema = new mongoose.Schema({
   },
   email: {
     type: String,
+    unique: true,
   },
+
   phone: {
     type: String,
+    unique: true,
   },
   favorite: {
     type: Boolean,
     default: false,
+  },
+  contactId: {
+    type: String,
+    required: true,
   },
 });
 

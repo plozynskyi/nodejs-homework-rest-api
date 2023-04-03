@@ -14,7 +14,12 @@ const {
 } = require('../utils/validation');
 
 const getContacts = async (req, res, next) => {
-  const contacts = await getContactsService();
+  console.log(req.user); // -------------------------------------
+  console.log(req.token); // -------------------------------------
+
+  const { _id } = req.user;
+
+  const contacts = await getContactsService(_id);
   res.status(200).json({
     status: 'success',
     code: 200,
@@ -41,12 +46,13 @@ const getContactById = async (req, res, next) => {
 };
 
 const addContact = async (req, res, next) => {
+  const { _id } = req.user;
   const { error } = contactValidationSchema.validate(req.body);
   if (error) {
     throw new HttpError(400, error.message);
   }
   const { name, email, phone, favorite } = req.body;
-  const result = await addContactService({ name, email, phone, favorite });
+  const result = await addContactService({ name, email, phone, favorite }, _id);
   res.status(201).json({
     status: 'success',
     code: 201,
