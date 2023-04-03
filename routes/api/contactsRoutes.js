@@ -13,11 +13,14 @@ const {
 
 const { asyncWrapper } = require('../../helpers/apiHelper');
 
-router.route('/').get(asyncWrapper(getContacts));
-router.route('/').post(asyncWrapper(addContact));
-router.route('/:contactId').get(asyncWrapper(getContactById));
-router.route('/:contactId').put(asyncWrapper(updateContactById));
-router.route('/:contactId').delete(asyncWrapper(removeContactById));
+router.route('/').get(asyncWrapper(getContacts)).post(asyncWrapper(addContact));
+
+router
+  .route('/:contactId')
+  .get(asyncWrapper(getContactById))
+  .put(asyncWrapper(updateContactById))
+  .delete(asyncWrapper(removeContactById));
+
 router
   .route('/:contactId/favorite')
   .patch(asyncWrapper(updateStatusContactById));
