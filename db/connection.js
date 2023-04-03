@@ -1,10 +1,4 @@
-const { MongoClient, ServerApiVersion } = require('mongodb');
-
-const collections = {};
-
-const getCollections = () => {
-  return collections;
-};
+const mongoose = require('mongoose');
 
 const dotenv = require('dotenv');
 dotenv.config();
@@ -12,14 +6,13 @@ dotenv.config();
 const { MONGO_URL } = process.env;
 
 const connectMongo = async () => {
-  const client = await MongoClient.connect(MONGO_URL, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-    serverApi: ServerApiVersion.v1,
-  });
-  const db = client.db();
-  collections.Contacts = db.collection('contacts');
-  console.log('Database (MongoDB) connected successful');
+  await mongoose
+    .connect(MONGO_URL)
+    .then(console.log('Database (MongoDB) connected successful'))
+    .catch(error => {
+      console.log(error.message);
+      process.exit(1);
+    });
 };
 
-module.exports = { connectMongo, getCollections };
+module.exports = { connectMongo };
