@@ -1,30 +1,28 @@
 const { Contact } = require('../db/contactsModel');
 
-const getContactsService = async contactId => {
-  const contacts = await Contact.find({ contactId });
+const getContactsService = async owner => {
+  const contacts = await Contact.find({ owner });
   return contacts;
 };
 
-const getContactByIdService = async id => {
-  const result = await Contact.findById(id);
+const getContactByIdService = async (contactId, owner) => {
+  const result = await Contact.findOne({ _id: contactId, owner });
   return result || null;
 };
 
-const addContactService = async (
-  { name, email, phone, favorite },
-  contactId
-) => {
-  const contact = new Contact({ name, email, phone, favorite, contactId });
+const addContactService = async ({ name, email, phone, favorite }, owner) => {
+  const contact = new Contact({ name, email, phone, favorite, owner });
   await contact.save();
   return contact;
 };
 
 const updateContactByIdService = async (
-  id,
-  { name, email, phone, favorite }
+  contactId,
+  { name, email, phone, favorite },
+  owner
 ) => {
-  const updateContact = await Contact.findByIdAndUpdate(
-    id,
+  const updateContact = await Contact.findOneAndUpdate(
+    { _id: contactId, owner },
     {
       $set: { name, email, phone, favorite },
     },
@@ -34,14 +32,24 @@ const updateContactByIdService = async (
   return updateContact || null;
 };
 
-const removeContactByIdService = async id => {
-  const removeContact = await Contact.findByIdAndDelete(id);
+const removeContactByIdService = async (contactId, owner) => {
+  const removeContact = await Contact.findByIdAndDelete({
+    _id: contactId,
+    owner,
+  });
   return removeContact || null;
 };
 
-const updateStatusContactByIdService = async (id, { favorite }) => {
-  const updateStatus = await Contact.findByIdAndUpdate(
-    id,
+const updateStatusContactByIdService = async (
+  contactId,
+  { favorite },
+  owner
+) => {
+  const updateStatus = await Contact.findOneAndUpdate(
+    {
+      _id: contactId,
+      owner,
+    },
     {
       $set: { favorite },
     },

@@ -17,6 +17,7 @@ const authMiddleware = (req, res, next) => {
 
   try {
     const user = jwt.decode(token, JWT_SECRET);
+
     req.user = user;
     req.token = token;
     next();

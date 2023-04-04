@@ -30,6 +30,7 @@ const loginService = async (email, password) => {
   const token = jwt.sign(
     {
       _id: user._id,
+      createdAd: user.createdAd,
     },
     JWT_SECRET
   );
