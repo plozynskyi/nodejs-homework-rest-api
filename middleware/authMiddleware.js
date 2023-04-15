@@ -8,7 +8,7 @@ const { JWT_SECRET } = process.env;
 
 const { AuthError } = require('../helpers/authError');
 
-const authMiddleware = (req, res, next) => {
+const authMiddleware = async (req, res, next) => {
   const [tokenType, token] = req.headers['authorization'].split(' ');
 
   if (!token) {
