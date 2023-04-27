@@ -13,7 +13,9 @@ const {
   favoriteStatusSchema,
 } = require('../utils/validation');
 
-const getContacts = async (req, res, next) => {
+const { asyncWrapper } = require('../helpers/apiHelper');
+
+let getContacts = async (req, res, next) => {
   // console.log(req.user); // -------------------------------------
   // console.log(req.user); // -------------------------------------
   const { _id: owner } = req.user;
@@ -28,7 +30,9 @@ const getContacts = async (req, res, next) => {
   });
 };
 
-const getContactById = async (req, res, next) => {
+getContacts = asyncWrapper(getContacts);
+
+let getContactById = async (req, res, next) => {
   const { contactId } = req.params;
   const { _id: owner } = req.user;
   const contact = await getContactByIdService(contactId, owner);
@@ -44,7 +48,9 @@ const getContactById = async (req, res, next) => {
   });
 };
 
-const addContact = async (req, res, next) => {
+getContactById = asyncWrapper(getContactById);
+
+let addContact = async (req, res, next) => {
   const { _id: owner } = req.user;
   const { error } = contactValidationSchema.validate(req.body);
   if (error) {
@@ -69,7 +75,9 @@ const addContact = async (req, res, next) => {
   });
 };
 
-const updateContactById = async (req, res, next) => {
+addContact = asyncWrapper(addContact);
+
+let updateContactById = async (req, res, next) => {
   const { _id: owner } = req.user;
   const { error } = contactValidationSchema.validate(req.body);
   if (error) {
@@ -100,7 +108,9 @@ const updateContactById = async (req, res, next) => {
   });
 };
 
-const removeContactById = async (req, res, next) => {
+updateContactById = asyncWrapper(updateContactById);
+
+let removeContactById = async (req, res, next) => {
   const { contactId } = req.params;
   const { _id: owner } = req.user;
   const result = await removeContactByIdService(contactId, owner);
@@ -117,7 +127,9 @@ const removeContactById = async (req, res, next) => {
   });
 };
 
-const updateStatusContactById = async (req, res, next) => {
+removeContactById = asyncWrapper(removeContactById);
+
+let updateStatusContactById = async (req, res, next) => {
   const { error } = favoriteStatusSchema.validate(req.body);
   if (error) {
     throw new HttpError(400, `missing field favorite`);
@@ -143,6 +155,8 @@ const updateStatusContactById = async (req, res, next) => {
     },
   });
 };
+
+updateStatusContactById = asyncWrapper(updateStatusContactById);
 
 module.exports = {
   getContacts,

@@ -11,22 +11,18 @@ const {
   updateStatusContactById,
 } = require('../../controllers/contactsControllers');
 
-const { asyncWrapper } = require('../../helpers/apiHelper');
-
 const { authMiddleware } = require('../../middleware/authMiddleware');
 
 router.use(authMiddleware);
 
-router.route('/').get(asyncWrapper(getContacts)).post(asyncWrapper(addContact));
+router.route('/').get(getContacts).post(addContact);
 
 router
   .route('/:contactId')
-  .get(asyncWrapper(getContactById))
-  .put(asyncWrapper(updateContactById))
-  .delete(asyncWrapper(removeContactById));
+  .get(getContactById)
+  .put(updateContactById)
+  .delete(removeContactById);
 
-router
-  .route('/:contactId/favorite')
-  .patch(asyncWrapper(updateStatusContactById));
+router.route('/:contactId/favorite').patch(updateStatusContactById);
 
 module.exports = { contactsRouter: router };
