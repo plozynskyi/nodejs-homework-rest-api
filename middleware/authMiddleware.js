@@ -1,28 +1,31 @@
-/* eslint-disable no-unused-vars */
-/* eslint-disable dot-notation */
 const jwt = require('jsonwebtoken');
 const dotenv = require('dotenv');
-
 dotenv.config();
 const { JWT_SECRET } = process.env;
 
+const { User } = require('../db/usersModel');
 const { AuthError } = require('../helpers/authError');
 
 const authMiddleware = async (req, res, next) => {
-  const [tokenType, token] = req.headers['authorization'].split(' ');
+  const { authorization = '' } = req.headers;
+  const [bearer, token] = authorization.split(' ');
 
-  if (!token) {
-    next(new AuthError('Not authorized, please, provide a token'));
+  if (bearer !== 'Bearer') {
+    next(new AuthError(401, 'Not authorized, please, provide a token'));
   }
 
   try {
-    const user = jwt.decode(token, JWT_SECRET);
+    const { _id } = jwt.verify(token, JWT_SECRET);
+    const user = await User.findById(_id);
+
+    if (token !== user.token || !user || !user.token) {
+      next(AuthError(401, 'Not authorized, invalid token'));
+    }
 
     req.user = user;
-    req.token = token;
     next();
   } catch (error) {
-    next(new AuthError('Not authorized, invalid token'));
+    next(new AuthError(401, 'Not authorized, invalid token'));
   }
 };
 

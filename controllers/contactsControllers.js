@@ -8,22 +8,21 @@ const {
 } = require('../services/contactsServices');
 
 const { HttpError } = require('../helpers/HttpError');
+const { asyncWrapper } = require('../helpers/apiHelper');
 const {
   contactValidationSchema,
   favoriteStatusSchema,
 } = require('../utils/validation');
 
-const { asyncWrapper } = require('../helpers/apiHelper');
-
 let getContacts = async (req, res, next) => {
-  // console.log(req.user); // -------------------------------------
-  // console.log(req.user); // -------------------------------------
   const { _id: owner } = req.user;
-  const contacts = await getContactsService(owner);
+  const { page } = req.query;
+  const contacts = await getContactsService(owner, { ...req.query });
   res.status(200).json({
     status: 'success',
     code: 200,
     data_length: contacts.length,
+    page: page,
     data: {
       result: contacts,
     },
@@ -56,13 +55,10 @@ let addContact = async (req, res, next) => {
   if (error) {
     throw new HttpError(400, error.message);
   }
-  const { name, email, phone, favorite } = req.body;
+
   const result = await addContactService(
     {
-      name,
-      email,
-      phone,
-      favorite,
+      ...req.body,
     },
     owner
   );
@@ -84,14 +80,10 @@ let updateContactById = async (req, res, next) => {
     throw new HttpError(400, `Error validated`);
   }
   const { contactId } = req.params;
-  const { name, email, phone, favorite } = req.body;
   const result = await updateContactByIdService(
     contactId,
     {
-      name,
-      email,
-      phone,
-      favorite,
+      ...req.body,
     },
     owner
   );

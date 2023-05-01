@@ -2,14 +2,18 @@ const express = require('express');
 
 const router = express.Router();
 
-const { asyncWrapper } = require('../../helpers/apiHelper');
-
 const {
   registrationController,
   loginController,
+  getCurrent,
+  logout,
 } = require('../../controllers/authController');
 
-router.route('/register').post(asyncWrapper(registrationController));
-router.route('/login').post(asyncWrapper(loginController));
+const { authMiddleware } = require('../../middleware/authMiddleware');
+
+router.route('/register').post(registrationController);
+router.route('/login').post(loginController);
+router.route('/current').get(authMiddleware, getCurrent);
+router.route('/logout').post(authMiddleware, logout);
 
 module.exports = { authRouter: router };

@@ -8,7 +8,11 @@ const { JWT_SECRET } = process.env;
 const { User } = require('../db/usersModel');
 const { AuthError } = require('../helpers/authError');
 
-const registrationService = async ({ email, password }) => {
+const registrationService = async (email, password) => {
+  const verifyUser = await User.findOne({ email });
+  if (verifyUser) {
+    throw new AuthError(409, `User with email: ${email} already exist`);
+  }
   const user = new User({
     email,
     password,
@@ -20,22 +24,24 @@ const registrationService = async ({ email, password }) => {
 const loginService = async (email, password) => {
   const user = await User.findOne({ email });
   if (!user) {
-    throw new AuthError(`User with email - ${email} not found`);
+    throw new AuthError(401, `User with email - ${email} not found`);
   }
 
-  if (!(await bcrypt.compare(password, user.password))) {
-    throw new AuthError('Email or password is wrong');
+  const comparePassword = await bcrypt.compare(password, user.password);
+
+  if (!comparePassword) {
+    throw new AuthError(401, 'Email or password is wrong');
   }
 
-  const token = jwt.sign(
-    {
-      _id: user._id,
-      createdAd: user.createdAd,
-    },
-    JWT_SECRET
-  );
+  const payload = {
+    _id: user._id,
+  };
 
-  return token;
+  const token = jwt.sign(payload, JWT_SECRET, { expiresIn: '1h' });
+
+  await User.findByIdAndUpdate(user._id, { token });
+
+  return { token, user };
 };
 
 module.exports = {

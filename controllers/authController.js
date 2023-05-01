@@ -3,21 +3,53 @@ const {
   loginService,
 } = require('../services/authServices');
 
-// const { AuthError } = require('../helpers/authError');
+const { User } = require('../db/usersModel');
+const { asyncWrapper } = require('../helpers/apiHelper');
 
-const registrationController = async (req, res) => {
+let registrationController = async (req, res) => {
   const { email, password } = req.body;
-  await registrationService({ email, password });
+  await registrationService(email, password);
   res.json({ status: 'success' });
 };
 
-const loginController = async (req, res) => {
+registrationController = asyncWrapper(registrationController);
+
+let loginController = async (req, res) => {
   const { email, password } = req.body;
-  const token = await loginService(email, password);
-  res.json({ status: 'success', token });
+  const { token, user } = await loginService(email, password);
+  res.json({
+    status: 'success',
+    token,
+    user: { email: user.email, subscription: user.subscription },
+  });
 };
+
+loginController = asyncWrapper(loginController);
+
+let getCurrent = async (req, res) => {
+  const { email, subscription } = req.user;
+  res.json({
+    email,
+    subscription,
+  });
+};
+
+getCurrent = asyncWrapper(getCurrent);
+
+let logout = async (req, res) => {
+  const { _id } = req.user;
+  await User.findByIdAndUpdate(_id, { token: '' });
+
+  res.json({
+    message: 'Logout success',
+  });
+};
+
+logout = asyncWrapper(logout);
 
 module.exports = {
   registrationController,
   loginController,
+  getCurrent,
+  logout,
 };
