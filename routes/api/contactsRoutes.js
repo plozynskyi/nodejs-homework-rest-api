@@ -11,15 +11,26 @@ const {
   updateStatusContactById,
 } = require('../../controllers/contactsControllers');
 
-const { asyncWrapper } = require('../../helpers/apiHelper');
+const validateBody = require('../../utils/validateBody');
+const schemas = require('../../utils/validation/contactValidationSchemas');
 
-router.route('/').get(asyncWrapper(getContacts));
-router.route('/').post(asyncWrapper(addContact));
-router.route('/:contactId').get(asyncWrapper(getContactById));
-router.route('/:contactId').put(asyncWrapper(updateContactById));
-router.route('/:contactId').delete(asyncWrapper(removeContactById));
+const { authMiddleware } = require('../../middleware/authMiddleware');
+
+router.use(authMiddleware);
+
+router
+  .route('/')
+  .get(getContacts)
+  .post(validateBody(schemas.contactValidationSchema), addContact);
+
+router
+  .route('/:contactId')
+  .get(getContactById)
+  .put(validateBody(schemas.contactValidationSchema), updateContactById)
+  .delete(removeContactById);
+
 router
   .route('/:contactId/favorite')
-  .patch(asyncWrapper(updateStatusContactById));
+  .patch(validateBody(schemas.favoriteStatusSchema), updateStatusContactById);
 
 module.exports = { contactsRouter: router };

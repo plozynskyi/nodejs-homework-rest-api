@@ -1,27 +1,36 @@
-const { Contact } = require('../db/contactsModal');
+const { Contact } = require('../db/contactsModel');
 
-const getContactsService = async () => {
-  const contacts = await Contact.find({});
+const getContactsService = async (
+  owner,
+  { page = 1, limit = 20, favorite }
+) => {
+  const skip = (page - 1) * limit;
+
+  const contacts = await Contact.find({ owner }, '-createdAt -updatedAt', {
+    skip,
+    limit,
+  }).populate('owner', 'name email subscription');
   return contacts;
 };
 
-const getContactByIdService = async id => {
-  const result = await Contact.findById(id);
+const getContactByIdService = async (contactId, owner) => {
+  const result = await Contact.findOne({ _id: contactId, owner });
   return result || null;
 };
 
-const addContactService = async ({ name, email, phone, favorite }) => {
-  const contact = new Contact({ name, email, phone, favorite });
+const addContactService = async ({ name, email, phone, favorite }, owner) => {
+  const contact = new Contact({ name, email, phone, favorite, owner });
   await contact.save();
   return contact;
 };
 
 const updateContactByIdService = async (
-  id,
-  { name, email, phone, favorite }
+  contactId,
+  { name, email, phone, favorite },
+  owner
 ) => {
-  const updateContact = await Contact.findByIdAndUpdate(
-    id,
+  const updateContact = await Contact.findOneAndUpdate(
+    { _id: contactId, owner },
     {
       $set: { name, email, phone, favorite },
     },
@@ -31,14 +40,24 @@ const updateContactByIdService = async (
   return updateContact || null;
 };
 
-const removeContactByIdService = async id => {
-  const removeContact = await Contact.findByIdAndDelete(id);
+const removeContactByIdService = async (contactId, owner) => {
+  const removeContact = await Contact.findByIdAndDelete({
+    _id: contactId,
+    owner,
+  });
   return removeContact || null;
 };
 
-const updateStatusContactByIdService = async (id, { favorite }) => {
-  const updateStatus = await Contact.findByIdAndUpdate(
-    id,
+const updateStatusContactByIdService = async (
+  contactId,
+  { favorite },
+  owner
+) => {
+  const updateStatus = await Contact.findOneAndUpdate(
+    {
+      _id: contactId,
+      owner,
+    },
     {
       $set: { favorite },
     },

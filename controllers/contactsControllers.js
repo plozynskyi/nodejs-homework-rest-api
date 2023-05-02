@@ -8,26 +8,29 @@ const {
 } = require('../services/contactsServices');
 
 const { HttpError } = require('../helpers/HttpError');
-const {
-  contactValidationSchema,
-  favoriteStatusSchema,
-} = require('../utils/validation');
+const { asyncWrapper } = require('../helpers/apiHelper');
 
-const getContacts = async (req, res, next) => {
-  const contacts = await getContactsService();
+let getContacts = async (req, res, next) => {
+  const { _id: owner } = req.user;
+  const { page } = req.query;
+  const contacts = await getContactsService(owner, { ...req.query });
   res.status(200).json({
     status: 'success',
     code: 200,
     data_length: contacts.length,
+    page: page,
     data: {
       result: contacts,
     },
   });
 };
 
-const getContactById = async (req, res, next) => {
+getContacts = asyncWrapper(getContacts);
+
+let getContactById = async (req, res, next) => {
   const { contactId } = req.params;
-  const contact = await getContactByIdService(contactId);
+  const { _id: owner } = req.user;
+  const contact = await getContactByIdService(contactId, owner);
   if (!contact) {
     throw new HttpError(404, `Contact with id - ${contactId} not found`);
   }
@@ -40,13 +43,17 @@ const getContactById = async (req, res, next) => {
   });
 };
 
-const addContact = async (req, res, next) => {
-  const { error } = contactValidationSchema.validate(req.body);
-  if (error) {
-    throw new HttpError(400, error.message);
-  }
-  const { name, email, phone, favorite } = req.body;
-  const result = await addContactService({ name, email, phone, favorite });
+getContactById = asyncWrapper(getContactById);
+
+let addContact = async (req, res, next) => {
+  const { _id: owner } = req.user;
+
+  const result = await addContactService(
+    {
+      ...req.body,
+    },
+    owner
+  );
   res.status(201).json({
     status: 'success',
     code: 201,
@@ -56,19 +63,19 @@ const addContact = async (req, res, next) => {
   });
 };
 
-const updateContactById = async (req, res, next) => {
-  const { error } = contactValidationSchema.validate(req.body);
-  if (error) {
-    throw new HttpError(400, `Error validated`);
-  }
+addContact = asyncWrapper(addContact);
+
+let updateContactById = async (req, res, next) => {
+  const { _id: owner } = req.user;
+
   const { contactId } = req.params;
-  const { name, email, phone, favorite } = req.body;
-  const result = await updateContactByIdService(contactId, {
-    name,
-    email,
-    phone,
-    favorite,
-  });
+  const result = await updateContactByIdService(
+    contactId,
+    {
+      ...req.body,
+    },
+    owner
+  );
 
   if (!result) {
     throw new HttpError(404, `Contact with ${contactId} not found`);
@@ -82,9 +89,12 @@ const updateContactById = async (req, res, next) => {
   });
 };
 
-const removeContactById = async (req, res, next) => {
+updateContactById = asyncWrapper(updateContactById);
+
+let removeContactById = async (req, res, next) => {
   const { contactId } = req.params;
-  const result = await removeContactByIdService(contactId);
+  const { _id: owner } = req.user;
+  const result = await removeContactByIdService(contactId, owner);
   if (!result) {
     throw new HttpError(404, `Not found`);
   }
@@ -98,16 +108,19 @@ const removeContactById = async (req, res, next) => {
   });
 };
 
-const updateStatusContactById = async (req, res, next) => {
-  const { error } = favoriteStatusSchema.validate(req.body);
-  if (error) {
-    throw new HttpError(400, `missing field favorite`);
-  }
+removeContactById = asyncWrapper(removeContactById);
+
+let updateStatusContactById = async (req, res, next) => {
   const { contactId } = req.params;
+  const { _id: owner } = req.user;
   const { favorite } = req.body;
-  const result = await updateStatusContactByIdService(contactId, {
-    favorite,
-  });
+  const result = await updateStatusContactByIdService(
+    contactId,
+    {
+      favorite,
+    },
+    owner
+  );
   if (!result) {
     throw new HttpError(404, `Contact with ${contactId} not found`);
   }
@@ -119,6 +132,8 @@ const updateStatusContactById = async (req, res, next) => {
     },
   });
 };
+
+updateStatusContactById = asyncWrapper(updateStatusContactById);
 
 module.exports = {
   getContacts,
