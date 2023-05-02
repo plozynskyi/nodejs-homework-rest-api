@@ -1,6 +1,7 @@
 const {
   registrationService,
   loginService,
+  avatarService,
 } = require('../services/authServices');
 
 const { User } = require('../db/usersModel');
@@ -8,6 +9,7 @@ const { asyncWrapper } = require('../helpers/apiHelper');
 
 let registrationController = async (req, res) => {
   const { email, password } = req.body;
+
   await registrationService(email, password);
   res.json({ status: 'success' });
 };
@@ -47,9 +49,22 @@ let logout = async (req, res) => {
 
 logout = asyncWrapper(logout);
 
+let updateAvatar = async (req, res) => {
+  const { _id } = req.user;
+  const { path: tempUpload, filename } = req.file;
+  const { avatarURL, email } = await avatarService(_id, tempUpload, filename);
+  res.json({
+    message: `Avatar change successful - ${email}`,
+    avatarURL,
+  });
+};
+
+updateAvatar = asyncWrapper(updateAvatar);
+
 module.exports = {
   registrationController,
   loginController,
   getCurrent,
   logout,
+  updateAvatar,
 };
