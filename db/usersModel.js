@@ -21,7 +21,10 @@ const usersSchema = new mongoose.Schema(
       enum: subscriptionList,
       default: 'starter',
     },
-
+    avatarURL: {
+      type: String,
+      required: true,
+    },
     token: String,
   },
   { versionKey: false, timestamps: true }

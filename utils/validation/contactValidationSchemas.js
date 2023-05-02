@@ -9,7 +9,7 @@ const contactValidationSchema = Joi.object({
     })
     .required(),
   phone: Joi.string().required(),
-  favorite: Joi.boolean().required(),
+  favorite: Joi.boolean(),
 });
 
 const favoriteStatusSchema = Joi.object({
