@@ -9,10 +9,6 @@ const {
 
 const { HttpError } = require('../helpers/HttpError');
 const { asyncWrapper } = require('../helpers/apiHelper');
-const {
-  contactValidationSchema,
-  favoriteStatusSchema,
-} = require('../utils/validation');
 
 let getContacts = async (req, res, next) => {
   const { _id: owner } = req.user;
@@ -51,10 +47,6 @@ getContactById = asyncWrapper(getContactById);
 
 let addContact = async (req, res, next) => {
   const { _id: owner } = req.user;
-  const { error } = contactValidationSchema.validate(req.body);
-  if (error) {
-    throw new HttpError(400, error.message);
-  }
 
   const result = await addContactService(
     {
@@ -75,10 +67,7 @@ addContact = asyncWrapper(addContact);
 
 let updateContactById = async (req, res, next) => {
   const { _id: owner } = req.user;
-  const { error } = contactValidationSchema.validate(req.body);
-  if (error) {
-    throw new HttpError(400, `Error validated`);
-  }
+
   const { contactId } = req.params;
   const result = await updateContactByIdService(
     contactId,
@@ -122,10 +111,6 @@ let removeContactById = async (req, res, next) => {
 removeContactById = asyncWrapper(removeContactById);
 
 let updateStatusContactById = async (req, res, next) => {
-  const { error } = favoriteStatusSchema.validate(req.body);
-  if (error) {
-    throw new HttpError(400, `missing field favorite`);
-  }
   const { contactId } = req.params;
   const { _id: owner } = req.user;
   const { favorite } = req.body;

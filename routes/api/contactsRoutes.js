@@ -11,18 +11,26 @@ const {
   updateStatusContactById,
 } = require('../../controllers/contactsControllers');
 
+const validateBody = require('../../utils/validateBody');
+const schemas = require('../../utils/validation/contactValidationSchemas');
+
 const { authMiddleware } = require('../../middleware/authMiddleware');
 
 router.use(authMiddleware);
 
-router.route('/').get(getContacts).post(addContact);
+router
+  .route('/')
+  .get(getContacts)
+  .post(validateBody(schemas.contactValidationSchema), addContact);
 
 router
   .route('/:contactId')
   .get(getContactById)
-  .put(updateContactById)
+  .put(validateBody(schemas.contactValidationSchema), updateContactById)
   .delete(removeContactById);
 
-router.route('/:contactId/favorite').patch(updateStatusContactById);
+router
+  .route('/:contactId/favorite')
+  .patch(validateBody(schemas.favoriteStatusSchema), updateStatusContactById);
 
 module.exports = { contactsRouter: router };
