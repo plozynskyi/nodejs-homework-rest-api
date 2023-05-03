@@ -1,9 +1,9 @@
-const mongoose = require('mongoose');
+const { Schema, model } = require('mongoose');
 const bcrypt = require('bcrypt');
 
 const subscriptionList = ['starter', 'pro', 'business'];
 
-const usersSchema = new mongoose.Schema(
+const usersSchema = new Schema(
   {
     email: {
       type: String,
@@ -26,6 +26,14 @@ const usersSchema = new mongoose.Schema(
       required: true,
     },
     token: String,
+    verify: {
+      type: Boolean,
+      default: false,
+    },
+    verificationToken: {
+      type: String,
+      required: [true, 'Verify token is required'],
+    },
   },
   { versionKey: false, timestamps: true }
 );
@@ -36,6 +44,6 @@ usersSchema.pre('save', async function () {
   }
 });
 
-const User = mongoose.model('user', usersSchema);
+const User = model('user', usersSchema);
 
 module.exports = { User };

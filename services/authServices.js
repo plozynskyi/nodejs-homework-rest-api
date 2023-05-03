@@ -1,15 +1,16 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const dotenv = require('dotenv');
 const gravatar = require('gravatar');
 const fs = require('fs/promises');
 const path = require('path');
+const { nanoid } = require('nanoid');
+require('dotenv').config();
 
-dotenv.config();
-const { JWT_SECRET } = process.env;
+const { JWT_SECRET, BASE_URL } = process.env;
 
 const { User } = require('../db/usersModel');
 const { AuthError } = require('../helpers/authError');
+const { sendEmail } = require('../helpers/sendEmail');
 const resizeAvatar = require('../utils/resizeAvatar');
 
 const avatarsDir = path.join(__dirname, '../', 'public', 'avatars');
@@ -21,11 +22,27 @@ const registrationService = async (email, password) => {
   }
 
   const avatarURL = gravatar.url(email);
+  const verificationToken = nanoid();
+
+  const verifyEmail = {
+    to: email,
+    subject: 'Homework #6',
+    html: `
+      <p>Verification email, Homework #6</p>
+      <a target="_blank" href="${BASE_URL}/api/users/verify/${verificationToken}">
+        Click verify email
+      </a>
+
+    `,
+  };
+
+  await sendEmail(verifyEmail);
 
   const user = new User({
     email,
     password,
     avatarURL,
+    verificationToken,
   });
 
   await user.save();
@@ -35,6 +52,13 @@ const loginService = async (email, password) => {
   const user = await User.findOne({ email });
   if (!user) {
     throw new AuthError(401, `User with email - ${email} not found`);
+  }
+
+  if (!user.verify) {
+    throw new AuthError(
+      404,
+      `User with email - ${email} not verify, pleas check your email`
+    );
   }
 
   const comparePassword = await bcrypt.compare(password, user.password);
@@ -72,8 +96,51 @@ const avatarService = async (_id, tempUpload, filename) => {
   return avatarUpdateResult;
 };
 
+const verifyService = async verificationToken => {
+  const user = await User.findOne({ verificationToken });
+  if (!user) {
+    throw new AuthError(404, `User not found`);
+  }
+  if (user.verify) {
+    throw new AuthError(400, 'Verification has already been passed');
+  }
+
+  await User.findByIdAndUpdate(user._id, {
+    verify: true,
+    verificationToken: null,
+  });
+  return user;
+};
+
+const resendVerifyEmailService = async email => {
+  const user = await User.findOne({ email });
+  if (!user) {
+    throw new AuthError(404, `Email not found`);
+  }
+  if (user.verify) {
+    throw new AuthError(400, `Email - ${user.email} already verify`);
+  }
+  const verifyEmail = {
+    to: email,
+    subject: 'Homework #6 (resent)',
+    html: `
+      <p>Verification email, Homework #6</p>
+      <a target="_blank" href="${BASE_URL}/api/users/verify/${user.verificationToken}">
+        Click verify email
+      </a>
+
+    `,
+  };
+
+  await sendEmail(verifyEmail);
+
+  return user;
+};
+
 module.exports = {
   registrationService,
   loginService,
   avatarService,
+  verifyService,
+  resendVerifyEmailService,
 };

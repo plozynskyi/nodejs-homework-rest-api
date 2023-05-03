@@ -2,6 +2,8 @@ const {
   registrationService,
   loginService,
   avatarService,
+  verifyService,
+  resendVerifyEmailService,
 } = require('../services/authServices');
 
 const { User } = require('../db/usersModel');
@@ -61,10 +63,33 @@ let updateAvatar = async (req, res) => {
 
 updateAvatar = asyncWrapper(updateAvatar);
 
+let verify = async (req, res) => {
+  const { verificationToken } = req.params;
+  const user = await verifyService(verificationToken);
+  res.json({
+    message: `Verification - ${user.email} success`,
+  });
+};
+
+verify = asyncWrapper(verify);
+
+let resendVerifyEmail = async (req, res) => {
+  const { email } = req.body;
+  const user = await resendVerifyEmailService(email);
+  res.json({
+    message: `Resend verification mail to - ${user.email} success`,
+    user,
+  });
+};
+
+resendVerifyEmail = asyncWrapper(resendVerifyEmail);
+
 module.exports = {
   registrationController,
   loginController,
   getCurrent,
   logout,
   updateAvatar,
+  verify,
+  resendVerifyEmail,
 };
