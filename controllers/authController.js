@@ -10,9 +10,9 @@ const { User } = require('../db/usersModel');
 const { asyncWrapper } = require('../helpers/apiHelper');
 
 let registrationController = async (req, res) => {
-  const { email, password } = req.body;
+  const { name, email, password } = req.body;
 
-  await registrationService(email, password);
+  await registrationService(name, email, password);
   res.json({ status: 'success' });
 };
 
@@ -24,15 +24,20 @@ let loginController = async (req, res) => {
   res.json({
     status: 'success',
     token,
-    user: { email: user.email, subscription: user.subscription },
+    user: {
+      name: user.name,
+      email: user.email,
+      subscription: user.subscription,
+    },
   });
 };
 
 loginController = asyncWrapper(loginController);
 
 let getCurrent = async (req, res) => {
-  const { email, subscription } = req.user;
+  const { name, email, subscription } = req.user;
   res.json({
+    name,
     email,
     subscription,
   });

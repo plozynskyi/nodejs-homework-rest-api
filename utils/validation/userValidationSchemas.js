@@ -7,6 +7,7 @@ const registerSchema = Joi.object({
       tlds: { allow: ['com', 'net', 'ua'] },
     })
     .required(),
+  name: Joi.string().required(),
   password: Joi.string().min(6).required(),
 });
 

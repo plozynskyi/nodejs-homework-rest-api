@@ -20,6 +20,7 @@ const getContactByIdService = async (contactId, owner) => {
 
 const addContactService = async ({ name, email, phone, favorite }, owner) => {
   const contact = new Contact({ name, email, phone, favorite, owner });
+  console.log(contact.id);
   await contact.save();
   return contact;
 };

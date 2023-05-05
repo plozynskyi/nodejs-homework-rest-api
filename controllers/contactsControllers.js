@@ -54,12 +54,12 @@ let addContact = async (req, res, next) => {
     },
     owner
   );
+
   res.status(201).json({
     status: 'success',
-    code: 201,
-    data: {
-      result: result,
-    },
+    _id: result.id,
+    name: result.name,
+    phone: result.phone,
   });
 };
 

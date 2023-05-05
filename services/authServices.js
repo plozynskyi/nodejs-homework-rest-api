@@ -15,7 +15,7 @@ const resizeAvatar = require('../utils/resizeAvatar');
 
 const avatarsDir = path.join(__dirname, '../', 'public', 'avatars');
 
-const registrationService = async (email, password) => {
+const registrationService = async (name, email, password) => {
   const verifyUser = await User.findOne({ email });
   if (verifyUser) {
     throw new AuthError(409, `User with email: ${email} already exist`);
@@ -39,6 +39,7 @@ const registrationService = async (email, password) => {
   await sendEmail(verifyEmail);
 
   const user = new User({
+    name,
     email,
     password,
     avatarURL,
@@ -71,7 +72,7 @@ const loginService = async (email, password) => {
     _id: user._id,
   };
 
-  const token = jwt.sign(payload, JWT_SECRET, { expiresIn: '1h' });
+  const token = jwt.sign(payload, JWT_SECRET, { expiresIn: '1d' });
 
   await User.findByIdAndUpdate(user._id, { token });
 

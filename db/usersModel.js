@@ -5,6 +5,12 @@ const subscriptionList = ['starter', 'pro', 'business'];
 
 const usersSchema = new Schema(
   {
+    name: {
+      type: String,
+      unique: true,
+      required: [true, 'Email is required'],
+    },
+
     email: {
       type: String,
       unique: true,
